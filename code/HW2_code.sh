@@ -60,19 +60,11 @@ ragtag.py correct ./ref/CP015498.fasta ./genomes/SRR15131330.fasta
 ragtag.py correct ./ref/CP015498.fasta ./genomes/ERR204044.fasta
 ragtag.py correct ./ref/CP015498.fasta ./genomes/SRR18214264.fasta
 
-bwa mem -t 6 ../ref/HV_genome.fa AII_1.fq.gz AII_2.fq.gz | samtools sort -@6 -o AII.bam
-#bwa mem -t 9 ${GPREF} \
-#	../trim/AII_frw.fq.gz ../trim/AII_rev.fq.gz 2> bwa_log.txt | samtools sort -@2 -o AII_HVgp.bam
-#bwa mem -t 9 ${GPREF} \
-
-bwa index ./genomes/SRR15131330.fasta
-bwa mem -t 6 ./genomes/SRR15131330.fasta ./trim/SRR15131330_trimmed.fq.gz 2> ./map_test/SRR15131330_bwa_log.txt | samtools view -bS -@ 6 | samtools sort -@ 6 -o ./map_test/SRR15131330.bam
-
-
 for i in ./trim/*_trimmed.fq.gz
 do
     base=$(basename $i _trimmed.fq.gz)
     bwa index ./genomes/${base}_correct.fasta
     bwa mem -t 6 ./genomes/${base}_correct.fasta ./trim/${base}_trimmed.fq.gz 2> ./map_test/${base}_bwa_log.txt |\
     samtools view -bS -@ 6 | samtools sort -@ 6 -o ./map_test/${base}.bam
+    samtools stats -in ./map_test/${base}.bam > ./map_test/map_stats_${base}.txt
 done
