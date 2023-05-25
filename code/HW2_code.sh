@@ -67,4 +67,61 @@ do
     bwa mem -t 6 ./genomes/${base}_correct.fasta ./trim/${base}_trimmed.fq.gz 2> ./map_test/${base}_bwa_log.txt |\
     samtools view -bS -@ 6 | samtools sort -@ 6 -o ./map_test/${base}.bam
     samtools stats -in ./map_test/${base}.bam > ./map_test/map_stats_${base}.txt
+    plot-bamstats ./map_test/map_stats_${base}.txt -p ./map_test/plots/${base}
+done
+
+##Genome analysis and annotation
+
+#Using Gepard tool create dotplots to show similarities/dissimilarities between your samples. 
+#Describe, your results (in your code). In the last question you will have to upload dotplots, so save them.
+
+#Using BUSCO analysis tool, evaluate your assemblies. Provide a short comment on BUSCO results.
+
+#Using GeneMarkS-2 tool (http://exon.gatech.edu/genemark/genemarks2.cgi) predict genes in your assembled genomes.
+
+#Using RAST genome annotation server, predict and annotate genes in your assemblies.
+
+#Using CP015498 genes and proteins models as well as local blast, predict genes in your assemblies.
+#Ranka atsisiun2iau CP015498 cDNA ir baltynų sekas ir įkęliau į ref direktoriją (CP015498_cdna.fasta ir CP015498_prot.fasta)
+
+#jei mano genomai yra ref
+
+for i in ./genomes/*_correct.fasta
+do
+makeblastdb -in $i -dbtype prot -parse_seqids
+done
+
+for i in ./genomes/*_correct.fasta
+do
+    base=$(basename $i _correct.fasta)
+    blastx -db ./genomes/${base}_correct.fasta -query ./ref/CP015498_prot.fasta > ./Blast/${base}_blastp.txt
+done
+
+for i in ./genomes/*_correct.fasta
+do
+makeblastdb -in $i -dbtype nucl -parse_seqids
+done
+
+for i in ./genomes/*_correct.fasta
+do
+    base=$(basename $i _correct.fasta)
+    blastn -db ./genomes/${base}_correct.fasta -query ./ref/CP015498_cdna.fasta > ./Blast/${base}_blastn.txt
+done
+
+#jei atsiustas genomas yra ref
+
+makeblastdb -in ./ref/CP015498_prot.fasta -dbtype prot -parse_seqids
+
+makeblastdb -in ./ref/CP015498_cdna.fasta -dbtype nucl -parse_seqids
+
+for i in ./genomes/*_correct.fasta
+do
+    base=$(basename $i _correct.fasta)
+    blastx -db ./ref/CP015498_prot.fasta -query ./genomes/${base}_correct.fasta > ./Blast/${base}_blastp.txt
+done
+
+for i in ./genomes/*_correct.fasta
+do
+    base=$(basename $i _correct.fasta)
+    blastn -db ./ref/CP015498_cdna.fasta -query ./genomes/${base}_correct.fasta > ./Blast/${base}_blastn_2.txt
 done
