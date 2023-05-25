@@ -1,4 +1,4 @@
-#!/bin/sh
+!/bin/sh
 
 #duomenų atsisiuntimas
 wget -O ./inputs/SRR18214264.fastq.gz "https://trace.ncbi.nlm.nih.gov/Traces/sra-reads-be/fastq?acc=SRR18214264"
@@ -72,7 +72,7 @@ bwa mem -t 6 ./genomes/SRR15131330.fasta ./trim/SRR15131330_trimmed.fq.gz 2> ./m
 for i in ./trim/*_trimmed.fq.gz
 do
     base=$(basename $i _trimmed.fq.gz)
-    bwa index ./genomes/${base}.fasta
-    bwa mem -t 6 ./genomes/${base}.fasta ./trim/${base}_trimmed.fq.gz 2> ./map_test/${base}_bwa_log.txt |\
+    bwa index ./genomes/${base}_correct.fasta
+    bwa mem -t 6 ./genomes/${base}_correct.fasta ./trim/${base}_trimmed.fq.gz 2> ./map_test/${base}_bwa_log.txt |\
     samtools view -bS -@ 6 | samtools sort -@ 6 -o ./map_test/${base}.bam
 done
