@@ -123,5 +123,6 @@ done
 for i in ./genomes/*_correct.fasta
 do
     base=$(basename $i _correct.fasta)
-    blastn -db ./ref/CP015498_cdna.fasta -query ./genomes/${base}_correct.fasta > ./Blast/${base}_blastn_2.txt
+    blastn -db ./ref/CP015498_cdna.fasta -query ./genomes/${base}_correct.fasta -outfmt "6 qseqid sseqid evalue qstart qend sstrand" > ./Blast/${base}_blastn_3.txt
 done
+
