@@ -9,34 +9,37 @@ wget -O ./inputs/SRR15131330.fastq.gz "https://trace.ncbi.nlm.nih.gov/Traces/sra
 
 efetch -db nucleotide -id CP015498  -format fasta > ./ref/CP015498.fasta
 
+##Data QA/QC
 # Data QC
 for i in inputs/*.gz
 do fastqc $i
 done
 
-#In your code write a short comment about your data quality.
+#duomenys atrodo gana padoriai pirmi 10 nt  pasiskirto netolygiai, 
+#bet nusprendŽiau juos palikti, kad būtų kuo ilgesnė sekos genomo surinkimui
+#yra duplikaciju
 
-multiqc inputs/*fastqc.zip -o inputs/
+#Trim your data
 
-#trim
 for i in inputs/*.fastq.gz
 do
     trim_galore -j 6 $i -o trim/
 done
 
-#trim QC
+#Repeat fastqc and evaluate if there were any changes.
 for i in trim/*.gz
 do fastqc $i
 done
 
-#In your code write a short comment about your results.
-
+#šiek tiek sumažėjo sekų, iš esmės nelabai pakito
 
 #Create a MultiQC plot that would include both fastqc results (raw and trimmed data). Upload this report to your git repository.
+multiqc inputs/*fastqc.zip -o inputs/
 multiqc trim/*fastqc.zip -o trim/
 
-#Genome assembly
+##Genome assembly
 #Assemble your genomes using spades program
+#Create an alternative assembly. Choose a program by yourself.
 #SRR15131330
 spades.py -t 4 --phred-offset 33 -s ./trim/SRR15131330_trimmed.fq.gz -o SRR15131330_assembly/spades
 
@@ -53,12 +56,23 @@ spades.py -t 4 --phred-offset 33 -s ./trim/SRR18214264_trimmed.fq.gz -o SRR18214
 
 abyss-pe -j 6 name=SRR18214264 k=48 in='trim/SRR18214264_trimmed.fq.gz'
 
-#labai pana6i kokyb4 abiem programom, spades \šiek tiek geresne, tai pasirinta toliau naudoti su šia programa surinktus genomus, juos perkeliu i gonome direktoriją
+#Evaluate your assemblies using Quast. Try to use CP015498 (NCBI) as a reference.
+#In your code describe your results: do all assemblies look the same? What are the main results?
+#Using quast results select the best/better assembly for each sample. In your code explain why you chose a specific assembly.
+
+
+#komentaras:
+#labai panaši kokybė su abiem programom, spades šiek tiek geresnė, 
+#tai pasirinkau toliau naudoti su šia programa surinktus genomus, juos perkeliu į gonome direktoriją
 
 #Orientate your contigs (make scaffolds) using ragtag program 
 ragtag.py correct ./ref/CP015498.fasta ./genomes/SRR15131330.fasta
 ragtag.py correct ./ref/CP015498.fasta ./genomes/ERR204044.fasta
 ragtag.py correct ./ref/CP015498.fasta ./genomes/SRR18214264.fasta
+
+#Using appropriate mapper, map original reads to you assemblies. 
+#Evaluate mapping fraction as well as genome coverage from mapped reads 
+#(and as in other questions, provide a comment on your results).
 
 for i in ./trim/*_trimmed.fq.gz
 do
@@ -126,3 +140,7 @@ do
     blastn -db ./ref/CP015498_cdna.fasta -query ./genomes/${base}_correct.fasta -outfmt "6 qseqid sseqid evalue qstart qend sstrand" > ./Blast/${base}_blastn_3.txt
 done
 
+#At the moment you should have 3 gene predictions. Compare and describe them 
+#(you should compare number of predicted genes and genes overlap. You don't have to include functional annotations).
+
+#SRR15131330
