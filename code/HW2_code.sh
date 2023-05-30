@@ -225,21 +225,27 @@ inner_join(SRR18214264_rast, SRR18214264_GeneMarkS, by=c("seqnames", "start", "e
 #Create a phylogenetic tree from 16S sequences. 
 #In your tree include reference genome 16S sequences and an outgroup (you can use Staphylococcus as an outgroup)
 
-#16S prot ID: CP015498.1_prot_AUI75673.1_399
+#Išsitraukiau mano surinktų genomų 16S sekas iš RAST, o ref ir outgrout iš NCBI.
+#Susikėliau visas sekas į UGENE ir sulygiavau su MUSCE algoritmu (palyginimo failas ~/HW2/palyginiai/16S.aln). 
+#Su UGENE nubraižiau filogenetinė medį (medis: ~/HW2/palyginiai/16S.pgn)
 
-blastdbcmd -db ./ref/CP015498_prot.fasta -entry_batch id.txt > 16S_seq.fasta
+#From your/BUSCO predictions, select five proteins and create a multi-gene tree. 
+#Again, include a reference genome as well as an outgroup (organisms in this and the previous question should match).
 
-makeblastdb -in ./genomes/SRR15131330_correct.fasta -dbtype nucl -parse_seqids
+5 baltymai:
+NAD-dependent oxidoreductase
+DNA topoisomerase IV subunit A
+DNA primase
+DNA polymerase III subunits gamma and tau
+LSU ribosomal maturation GTPase RbgA
 
-tblastn -db ./genomes/SRR15131330_correct.fasta -query 16S_seq.fasta -evalue 1e-100 > ./Blast/16S_seq.txt
+sekas paėmiau iš rast, o ref ir outgtoup iš NCBI
 
-cat  ./Blast/16S_seq.txt | grep ^NODE | awk '{print $1}' > 16S_SRR15131330_ID.txt
+for i in ./palyginiai/*.fasta
+do
+    base=$(basename $i .fasta)
+    muscle -in $i -out ./palyginiai/${base}.aln
+done
 
-
-
-blastdbcmd -db ./genomes/SRR15131330_correct.fasta -entry_batch 16S_SRR15131330_ID.txt > 16S_SRR15131330_seq.fasta
-
-
-
-makeblastdb -in 16S_SRR15131330_seq.fasta -dbtype nucl -parse_seqids
-tblastn -db 16S_SRR15131330_seq.fasta -query 16S_seq.fasta -evalue 1e-100 > ./Blast/16S_seq.txt
+Sulygiuotus baltymus sudėjau į vieną failą: ~/HW2/palyginiai/5_baltymaai.aln
+Su UGENE nubraižiau filogenetinė medį (medis: ~/HW2/palyginiai/5_baltymai.pgn)
