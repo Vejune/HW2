@@ -84,6 +84,8 @@ do
     plot-bamstats ./map_test/map_stats_${base}.txt -p ./map_test/plots/${base}
 done
 
+#Susimappino virš 99% nuskaitymu
+
 ##Genome analysis and annotation
 
 #Using Gepard tool create dotplots to show similarities/dissimilarities between your samples. 
@@ -96,33 +98,9 @@ done
 #Using RAST genome annotation server, predict and annotate genes in your assemblies.
 
 #Using CP015498 genes and proteins models as well as local blast, predict genes in your assemblies.
-#Ranka atsisiun2iau CP015498 cDNA ir baltynų sekas ir įkęliau į ref direktoriją (CP015498_cdna.fasta ir CP015498_prot.fasta)
 
-#jei mano genomai yra ref
-
-for i in ./genomes/*_correct.fasta
-do
-makeblastdb -in $i -dbtype prot -parse_seqids
-done
-
-for i in ./genomes/*_correct.fasta
-do
-    base=$(basename $i _correct.fasta)
-    blastx -db ./genomes/${base}_correct.fasta -query ./ref/CP015498_prot.fasta > ./Blast/${base}_blastp.txt
-done
-
-for i in ./genomes/*_correct.fasta
-do
-makeblastdb -in $i -dbtype nucl -parse_seqids
-done
-
-for i in ./genomes/*_correct.fasta
-do
-    base=$(basename $i _correct.fasta)
-    blastn -db ./genomes/${base}_correct.fasta -query ./ref/CP015498_cdna.fasta > ./Blast/${base}_blastn.txt
-done
-
-#jei atsiustas genomas yra ref
+#Ranka atsisiunčiau CP015498 cDNA ir baltymų sekas ir 
+#įkėliau į ref direktoriją (CP015498_cdna.fasta ir CP015498_prot.fasta)
 
 makeblastdb -in ./ref/CP015498_prot.fasta -dbtype prot -parse_seqids
 
@@ -137,10 +115,131 @@ done
 for i in ./genomes/*_correct.fasta
 do
     base=$(basename $i _correct.fasta)
-    blastn -db ./ref/CP015498_cdna.fasta -query ./genomes/${base}_correct.fasta -outfmt "6 qseqid sseqid evalue qstart qend sstrand" > ./Blast/${base}_blastn_3.txt
+    blastn -db ./ref/CP015498_cdna.fasta -query ./genomes/${base}_correct.fasta -outfmt "6 qseqid qstart qend" > ./Blast/${base}_blastn_3.txt
 done
 
 #At the moment you should have 3 gene predictions. Compare and describe them 
 #(you should compare number of predicted genes and genes overlap. You don't have to include functional annotations).
 
-#SRR15131330
+library(dplyr)
+# ERR204044 genų sk palyginimas:
+ERR204044_blast <- read.delim(file="ERR204044_blastn_3.txt", header = FALSE, sep = "\t")
+ERR204044_blast <- ERR204044_blast %>% 
+  rename("seqnames" = "V1",
+         "start" = "V2",
+         "end" = "V3")
+
+ERR204044_rast <- rtracklayer::import('ERR204044_rast.gtf')
+ERR204044_rast = as.data.frame(ERR204044_rast)
+
+ERR204044_GeneMarkS <- rtracklayer::import('ERR204044_GeneMarkS.gtf')
+ERR204044_GeneMarkS = as.data.frame(ERR204044_GeneMarkS)
+
+ERR204044_blast %>% distinct() %>% nrow()
+#2720
+
+nrow(ERR204044_rast)
+#2601
+
+nrow(ERR204044_GeneMarkS)
+#2360
+
+inner_join(ERR204044_blast, ERR204044_rast, by=c("seqnames", "start", "end")) %>% nrow()
+#1478
+
+inner_join(ERR204044_blast, ERR204044_GeneMarkS, by=c("seqnames", "start", "end")) %>% nrow()
+#1478
+
+inner_join(ERR204044_rast, ERR204044_GeneMarkS, by=c("seqnames", "start", "end")) %>% nrow()
+#2097
+
+inner_join(ERR204044_rast, ERR204044_GeneMarkS, by=c("seqnames", "start", "end")) %>% inner_join(ERR204044_blast, by=c("seqnames", "start", "end")) %>% nrow() 
+#1410
+
+# SRR15131330 genų sk palyginimas:
+
+SRR15131330_blast <- read.delim(file="SRR15131330_blastn_3.txt", header = FALSE, sep = "\t")
+SRR15131330_blast <- SRR15131330_blast %>% 
+  rename("seqnames" = "V1",
+         "start" = "V2",
+         "end" = "V3")
+
+SRR15131330_rast <- rtracklayer::import('SRR15131330_rast.gtf')
+SRR15131330_rast = as.data.frame(SRR15131330_rast)
+
+SRR15131330_GeneMarkS <- rtracklayer::import('SRR15131330_GeneMarkS.gtf')
+SRR15131330_GeneMarkS = as.data.frame(SRR15131330_GeneMarkS)
+
+SRR15131330_blast %>% distinct() %>% nrow()
+#3755
+nrow(SRR15131330_rast)
+#2733
+nrow(SRR15131330_GeneMarkS)
+#2538
+
+inner_join(SRR15131330_blast, SRR15131330_rast, by=c("seqnames", "start", "end")) %>% nrow()
+#2340
+
+inner_join(SRR15131330_blast, SRR15131330_GeneMarkS, by=c("seqnames", "start", "end")) %>% nrow()
+#2144
+
+inner_join(SRR15131330_rast, SRR15131330_GeneMarkS, by=c("seqnames", "start", "end")) %>% nrow()
+#2155
+
+inner_join(SRR15131330_rast, SRR15131330_GeneMarkS, by=c("seqnames", "start", "end")) %>% inner_join(SRR15131330_blast, by=c("seqnames", "start", "end")) %>% nrow() 
+#2037
+
+# SRR18214264 genų sk palyginimas:
+
+SRR18214264_blast <- read.delim(file="SRR18214264_blastn_3.txt", header = FALSE, sep = "\t")
+SRR18214264_blast <- SRR18214264_blast %>% 
+  rename("seqnames" = "V1",
+         "start" = "V2",
+         "end" = "V3")
+
+SRR18214264_rast <- rtracklayer::import('SRR18214264_rast.gtf')
+SRR18214264_rast = as.data.frame(SRR18214264_rast)
+
+SRR18214264_GeneMarkS <- rtracklayer::import('SRR18214264_GeneMarkS.gtf')
+SRR18214264_GeneMarkS = as.data.frame(SRR18214264_GeneMarkS)
+
+SRR18214264_blast %>% distinct() %>% nrow()
+#2568
+nrow(SRR18214264_rast)
+#2541
+nrow(SRR18214264_GeneMarkS)
+#2320
+
+inner_join(SRR18214264_blast, SRR18214264_rast, by=c("seqnames", "start", "end")) %>% nrow()
+#1595
+
+inner_join(SRR18214264_blast, SRR18214264_GeneMarkS, by=c("seqnames", "start", "end")) %>% nrow()
+#1545
+
+inner_join(SRR18214264_rast, SRR18214264_GeneMarkS, by=c("seqnames", "start", "end")) %>% nrow()
+#2036
+
+inner_join(SRR18214264_rast, SRR18214264_GeneMarkS, by=c("seqnames", "start", "end")) %>% inner_join(SRR18214264_blast, by=c("seqnames", "start", "end")) %>% nrow() 
+#1496
+
+#Create a phylogenetic tree from 16S sequences. 
+#In your tree include reference genome 16S sequences and an outgroup (you can use Staphylococcus as an outgroup)
+
+#16S prot ID: CP015498.1_prot_AUI75673.1_399
+
+blastdbcmd -db ./ref/CP015498_prot.fasta -entry_batch id.txt > 16S_seq.fasta
+
+makeblastdb -in ./genomes/SRR15131330_correct.fasta -dbtype nucl -parse_seqids
+
+tblastn -db ./genomes/SRR15131330_correct.fasta -query 16S_seq.fasta -evalue 1e-100 > ./Blast/16S_seq.txt
+
+cat  ./Blast/16S_seq.txt | grep ^NODE | awk '{print $1}' > 16S_SRR15131330_ID.txt
+
+
+
+blastdbcmd -db ./genomes/SRR15131330_correct.fasta -entry_batch 16S_SRR15131330_ID.txt > 16S_SRR15131330_seq.fasta
+
+
+
+makeblastdb -in 16S_SRR15131330_seq.fasta -dbtype nucl -parse_seqids
+tblastn -db 16S_SRR15131330_seq.fasta -query 16S_seq.fasta -evalue 1e-100 > ./Blast/16S_seq.txt
