@@ -66,9 +66,11 @@ abyss-pe -j 6 name=SRR18214264 k=48 in='trim/SRR18214264_trimmed.fq.gz'
 #tai pasirinkau toliau naudoti su šia programa surinktus genomus, juos perkeliu į gonome direktoriją
 
 #Orientate your contigs (make scaffolds) using ragtag program 
-ragtag.py correct ./ref/CP015498.fasta ./genomes/SRR15131330.fasta
-ragtag.py correct ./ref/CP015498.fasta ./genomes/ERR204044.fasta
-ragtag.py correct ./ref/CP015498.fasta ./genomes/SRR18214264.fasta
+for i in ./genomes/*.fasta
+do
+    base=$(basename $i .fasta)
+    ragtag.py scaffold ./ref/CP015498.fasta $i -o ./genomes/${base}
+done
 
 #Using appropriate mapper, map original reads to you assemblies. 
 #Evaluate mapping fraction as well as genome coverage from mapped reads 
@@ -90,12 +92,17 @@ done
 
 #Using Gepard tool create dotplots to show similarities/dissimilarities between your samples. 
 #Describe, your results (in your code). In the last question you will have to upload dotplots, so save them.
+#ERR204044 ir SRR18214264 atrodo įdentiškai, tik genomo gale yra skirtumų (keilios inversijos ir duplikacijos)
+#SRR15131330 labiau skiriasi nuo ERR204044 ir SRR18214264
 
 #Using BUSCO analysis tool, evaluate your assemblies. Provide a short comment on BUSCO results.
+#visuose surinkimuose Complete and single-copy BUSCOs virš 95%. Manau, kad visi trys surinkimai su spades programa yra geri.
 
 #Using GeneMarkS-2 tool (http://exon.gatech.edu/genemark/genemarks2.cgi) predict genes in your assembled genomes.
+#atlikta
 
 #Using RAST genome annotation server, predict and annotate genes in your assemblies.
+#atlikta
 
 #Using CP015498 genes and proteins models as well as local blast, predict genes in your assemblies.
 
@@ -153,6 +160,7 @@ inner_join(ERR204044_blast, ERR204044_GeneMarkS, by=c("seqnames", "start", "end"
 inner_join(ERR204044_rast, ERR204044_GeneMarkS, by=c("seqnames", "start", "end")) %>% nrow()
 #2097
 
+#bendri genai visom trim anotacijoms:
 inner_join(ERR204044_rast, ERR204044_GeneMarkS, by=c("seqnames", "start", "end")) %>% inner_join(ERR204044_blast, by=c("seqnames", "start", "end")) %>% nrow() 
 #1410
 
@@ -186,6 +194,7 @@ inner_join(SRR15131330_blast, SRR15131330_GeneMarkS, by=c("seqnames", "start", "
 inner_join(SRR15131330_rast, SRR15131330_GeneMarkS, by=c("seqnames", "start", "end")) %>% nrow()
 #2155
 
+#bendri genai visom trim anotacijoms:
 inner_join(SRR15131330_rast, SRR15131330_GeneMarkS, by=c("seqnames", "start", "end")) %>% inner_join(SRR15131330_blast, by=c("seqnames", "start", "end")) %>% nrow() 
 #2037
 
@@ -219,8 +228,12 @@ inner_join(SRR18214264_blast, SRR18214264_GeneMarkS, by=c("seqnames", "start", "
 inner_join(SRR18214264_rast, SRR18214264_GeneMarkS, by=c("seqnames", "start", "end")) %>% nrow()
 #2036
 
+#bendri genai visom trim anotacijoms:
 inner_join(SRR18214264_rast, SRR18214264_GeneMarkS, by=c("seqnames", "start", "end")) %>% inner_join(SRR18214264_blast, by=c("seqnames", "start", "end")) %>% nrow() 
 #1496
+
+#Using RAST annotations, create "ring diagram" that would show similarity/dissimilarity between your genomes. 
+#You will have to attach a figure in the last question.
 
 #Create a phylogenetic tree from 16S sequences. 
 #In your tree include reference genome 16S sequences and an outgroup (you can use Staphylococcus as an outgroup)
@@ -239,7 +252,7 @@ DNA primase
 DNA polymerase III subunits gamma and tau
 LSU ribosomal maturation GTPase RbgA
 
-sekas paėmiau iš rast, o ref ir outgtoup iš NCBI
+#sekas paėmiau iš rast, o ref ir outgtoup iš NCBI
 
 for i in ./palyginiai/*.fasta
 do
@@ -247,5 +260,14 @@ do
     muscle -in $i -out ./palyginiai/${base}.aln
 done
 
-Sulygiuotus baltymus sudėjau į vieną failą: ~/HW2/palyginiai/5_baltymaai.aln
-Su UGENE nubraižiau filogenetinė medį (medis: ~/HW2/palyginiai/5_baltymai.pgn)
+#Sulygiuotus baltymus sudėjau į vieną failą: ~/HW2/palyginiai/5_baltymaai.aln
+#Su UGENE nubraižiau filogenetinė medį (medis: ~/HW2/palyginiai/5_baltymai.pgn)
+
+#Compare your phylogenetic trees. do they look the same? Do they show same/identical clusters?
+# 16S ir 5_baltymų medžiai atrodo įdentiškai, susidaro tokie patys klasteriai, 
+#vienintelis skirtumas tas, kad su 5_baltymais gaunami didesni genetiniai atstumasi, nes yra daugiau skirtumų 
+
+#Using all data you got, can you identify if any of you genomes are more similar to each other than to the third one (or reference genome)? Explain your ideas.
+#remiantis 16S, 5_baltymų ir dotplot ir žiedinės diagramos palyginimais labai aiškia matosi, kad SRR18214264 ir ERR204044 genomai yra panašiausi 
+#(pagal 16S ir 5_baltymų palygnimus jie yra įdentiški, pagal dotpot irgi panašiausi iš visų trijų)
+#SRR15131330 panašiausias į ref. genomą, 16S ir 5_baltymų palyginimų filogenetnis medis juos sudėjo į vieną klasterį.
